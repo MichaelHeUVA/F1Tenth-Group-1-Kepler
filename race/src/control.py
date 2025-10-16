@@ -5,9 +5,9 @@ from race.msg import pid_input
 from ackermann_msgs.msg import AckermannDrive
 
 # PID Control Params
-kp = 0.0 #TODO
-kd = 0.0 #TODO
-ki = 0.0 #TODO
+kp = 0.0
+kd = 0.0
+ki = 0.0
 servo_offset = 0.0	# zero correction offset in case servo is misaligned and has a bias in turning.
 prev_error = 0.0
 
@@ -19,11 +19,11 @@ prev_error = 0.0
 # 25: Slow and steady
 # 35: Nice Autonomous Pace
 # > 40: Careful, what you do here. Only use this if your autonomous steering is very reliable.
-vel_input = 0.0	#TODO
+vel_input = 0.0
 
 # Publisher for moving the car.
-# TODO: Use the coorect topic /car_x/offboard/command. The multiplexer listens to this topic
-command_pub = rospy.Publisher('/car_9/offboard/command', AckermannDrive, queue_size = 1)
+# DONE: Use the coorect topic /car_x/offboard/command. The multiplexer listens to this topic
+command_pub = rospy.Publisher('/car_1/offboard/command', AckermannDrive, queue_size = 1)
 
 def control(data):
 	global prev_error
@@ -40,13 +40,29 @@ def control(data):
 	# 1. Scale the error
 	# 2. Apply the PID equation on error to compute steering
 
+	error = data.pid_error
+	diff = error - prev_error
+	steering_correction = kp * error + kd * diff
+	angle -= steering_correction
+	prev_error = error
+
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()
 
-	# TODO: Make sure the steering value is within bounds [-100,100]
+	# DONE: Make sure the steering value is within bounds [-100,100]
+	if angle > 100:
+		angle = 100
+	elif angle < -100:
+		angle = -100
+	
 	command.steering_angle = angle
 
-	# TODO: Make sure the velocity is within bounds [0,100]
+	# DONE: Make sure the velocity is within bounds [0,100]
+	if vel_input > 100:
+		vel_input = 100
+	elif vel_input < 0:
+		vel_input = 0
+	
 	command.speed = vel_input
 
 	# Move the car autonomously
@@ -59,7 +75,7 @@ if __name__ == '__main__':
 	global kd
 	global ki
 	global vel_input
-	kp = input("Enter Kp Value: ")
+	kp = input("Enter Kp Value: ")		# try 5 for kp and 0.09 for kd at first
 	kd = input("Enter Kd Value: ")
 	ki = input("Enter Ki Value: ")
 	vel_input = input("Enter desired velocity: ")

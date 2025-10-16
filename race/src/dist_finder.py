@@ -45,7 +45,7 @@ def getRange(data,angle):
 def callback(data):
 	global forward_projection
 
-	theta = 50 # you need to try different values for theta
+	theta = 65 # you need to try different values for theta
 	a = getRange(data,theta) # obtain the ray distance for theta
 	b = getRange(data,0)	# obtain the ray distance for 0 degrees (i.e. directly to the right of the car)
 
@@ -58,7 +58,7 @@ def callback(data):
 	## Your code goes here to determine the projected error as per the alrorithm
 	# Compute Alpha, AB, and CD..and finally the error.
 	# DONE: implement
-	alpha = math.atan((a*math.cos(swing) - b) / (a * math.sin(swing)))
+	alpha = math.atan2((a*math.cos(swing) - b) / (a * math.sin(swing)))
 	AB = b * math.cos(alpha)
 	CD = AB + forward_projection * math.sin(alpha)
 	error = desired_distance - CD
