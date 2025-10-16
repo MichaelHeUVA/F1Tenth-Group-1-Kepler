@@ -19,7 +19,7 @@ prev_error = 0.0
 # 25: Slow and steady
 # 35: Nice Autonomous Pace
 # > 40: Careful, what you do here. Only use this if your autonomous steering is very reliable.
-vel_input = 0.0
+vel_input = 15.0
 
 # Publisher for moving the car.
 # DONE: Use the coorect topic /car_x/offboard/command. The multiplexer listens to this topic
@@ -30,7 +30,8 @@ def control(data):
 	global vel_input
 	global kp
 	global kd
-	global angle = 0.0
+	global angle
+        angle = 0
 
 	print("PID Control Node is Listening to error")
 
@@ -40,11 +41,18 @@ def control(data):
 	# 1. Scale the error
 	# 2. Apply the PID equation on error to compute steering
 
+        print(angle)
+
 	error = data.pid_error
 	diff = error - prev_error
 	steering_correction = kp * error + kd * diff
-	angle -= steering_correction
+        steering_correction = math.degrees(steering_correction)
+	angle += steering_correction
 	prev_error = error
+
+        print("error is", error)
+        print("steering correction is", steering_correction)
+        print("new angle is", angle)
 
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()
@@ -75,10 +83,10 @@ if __name__ == '__main__':
 	global kd
 	global ki
 	global vel_input
-	kp = input("Enter Kp Value: ")		# try 5 for kp and 0.09 for kd at first
-	kd = input("Enter Kd Value: ")
-	ki = input("Enter Ki Value: ")
-	vel_input = input("Enter desired velocity: ")
+	kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
+	kd = float( input("Enter Kd Value: "))
+	ki = float(input("Enter Ki Value: "))
+	vel_input = float(input("Enter desired velocity: "))
 	rospy.init_node('pid_controller', anonymous=True)
     # subscribe to the error topic
 	rospy.Subscriber("error", pid_input, control)

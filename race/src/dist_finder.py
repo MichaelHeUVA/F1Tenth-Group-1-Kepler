@@ -8,7 +8,7 @@ from race.msg import pid_input
 # Some useful variable declarations.
 angle_range = 240	# Hokuyo 4LX has 240 degrees FoV for scan
 forward_projection = 1.5	# distance (in m) that we project the car forward for correcting the error. You have to adjust this.
-desired_distance = 0.9	# distance from the wall (in m). (defaults to right wall). You need to change this for the track
+desired_distance = 0.5	# distance from the wall (in m). (defaults to right wall). You need to change this for the track
 vel = 15 		# this vel variable is not really used here.
 error = 0.0		# initialize the error
 car_length = 0.50 # Traxxas Rally is 20 inches or 0.5 meters. Useful variable.
@@ -25,13 +25,10 @@ def getRange(data,angle):
     # DONE: implement
 
 	# take input angle and subtract angle_min and divide by angle_increment
+        angle += 30
 	angle_radians = math.radians(angle)
-	rospy.loginfo("Angle: %f", angle)
-	rospy.loginfo("Angle radians: %f", angle_radians)
-	rospy.loginfo("Angle min: %f", data.angle_min)
-	rospy.loginfo("Angle increment: %f", data.angle_increment)
 	
-	index = int((angle_radians - data.angle_min) / data.angle_increment)
+        index = int((angle_radians) / data.angle_increment)
 
 	if index >= 0 and index < len(data.ranges):
 		value = data.ranges[index]
@@ -45,7 +42,7 @@ def getRange(data,angle):
 def callback(data):
 	global forward_projection
 
-	theta = 65 # you need to try different values for theta
+        theta = 75 # you need to try different values for theta
 	a = getRange(data,theta) # obtain the ray distance for theta
 	b = getRange(data,0)	# obtain the ray distance for 0 degrees (i.e. directly to the right of the car)
 
@@ -58,7 +55,7 @@ def callback(data):
 	## Your code goes here to determine the projected error as per the alrorithm
 	# Compute Alpha, AB, and CD..and finally the error.
 	# DONE: implement
-	alpha = math.atan2((a*math.cos(swing) - b) / (a * math.sin(swing)))
+	alpha = math.atan2((a*math.cos(swing) - b), (a * math.sin(swing)))
 	AB = b * math.cos(alpha)
 	CD = AB + forward_projection * math.sin(alpha)
 	error = desired_distance - CD
