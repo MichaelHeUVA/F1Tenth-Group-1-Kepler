@@ -89,10 +89,19 @@ if __name__ == '__main__':
 	global kd
 	global ki
 	global vel_input
-	kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
-	kd = float( input("Enter Kd Value: "))
-	ki = float(input("Enter Ki Value: "))
-	max_velocity = float(input("Enter desired max velocity: "))
+	# kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
+	# kd = float( input("Enter Kd Value: "))
+	# ki = float(input("Enter Ki Value: "))
+	# max_velocity = float(input("Enter desired max velocity: "))
+	 
+	kp = rospy.get_param('~kp', 10.0)
+	kd = rospy.get_param('~kd', 0.5)
+	ki = rospy.get_param('~ki', 0.0)
+	max_velocity = rospy.get_param('~vel', 45.0)
+
+	rospy.loginfo("PID gains loaded: kp=%f, kd=%f, ki=%f", kp, kd, ki)
+	rospy.loginfo("Max Velocity set to: %f", max_velocity)
+
 	rospy.init_node('pid_controller', anonymous=True)
     # subscribe to the error topic
 	rospy.Subscriber("error", pid_input, control)
