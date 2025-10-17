@@ -23,12 +23,11 @@ def getRange(data,angle):
     # Outputs length in meters to object with angle in lidar scan field of view
     # Make sure to take care of NaNs etc.
     # DONE: implement
-
-	# take input angle and subtract angle_min and divide by angle_increment
-        angle += 30
+	
+	angle += 30
 	angle_radians = math.radians(angle)
 	
-        index = int((angle_radians) / data.angle_increment)
+	index = int((angle_radians) / data.angle_increment)
 
 	if index >= 0 and index < len(data.ranges):
 		value = data.ranges[index]
@@ -41,8 +40,8 @@ def getRange(data,angle):
 
 def callback(data):
 	global forward_projection
-
-        theta = 75 # you need to try different values for theta
+	
+	theta = 75 # you need to try different values for theta
 	a = getRange(data,theta) # obtain the ray distance for theta
 	b = getRange(data,0)	# obtain the ray distance for 0 degrees (i.e. directly to the right of the car)
 

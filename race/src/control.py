@@ -31,7 +31,7 @@ def control(data):
 	global kp
 	global kd
 	global angle
-        angle = 0
+	angle = 0
 
 	print("PID Control Node is Listening to error")
 
@@ -40,19 +40,18 @@ def control(data):
 
 	# 1. Scale the error
 	# 2. Apply the PID equation on error to compute steering
-
-        print(angle)
-
+	
+	print(angle)
 	error = data.pid_error
 	diff = error - prev_error
 	steering_correction = kp * error + kd * diff
-        steering_correction = math.degrees(steering_correction)
+	steering_correction = math.degrees(steering_correction)
 	angle += steering_correction
 	prev_error = error
-
-        print("error is", error)
-        print("steering correction is", steering_correction)
-        print("new angle is", angle)
+	
+	print("error is", error)
+	print("steering correction is", steering_correction)
+	print("new angle is", angle)
 
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()
