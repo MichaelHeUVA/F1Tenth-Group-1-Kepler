@@ -4,8 +4,8 @@
 
   <!-- Start your control and distance-finder nodes -->
   <node pkg="race" type="control.py" name="control" output="screen">
-    <param name="kp" value="0.6"/>
-    <param name="kd" value="0.08"/>
+    <param name="kp" value="5.5"/>
+    <param name="kd" value="0.5"/>
     <param name="ki" value="0.0"/>
     <param name="vel_input" value="35"/>
   </node>
