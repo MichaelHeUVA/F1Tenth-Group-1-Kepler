@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import rospy, math
 from ackermann_msgs.msg import AckermannDrive
 from visualization_msgs.msg import Marker
@@ -19,7 +19,7 @@ class SteeringViz:
         self.pub = rospy.Publisher(self.arrow_topic, Marker, queue_size=1)
         rospy.Subscriber(self.cmd_topic, AckermannDrive, self.cb)
 
-    def callback(self, msg):
+    def cb(self, msg):
         angle = msg.steering_angle
         if self.assume_degrees:
             angle = math.radians(angle)

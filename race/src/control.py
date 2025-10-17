@@ -22,7 +22,7 @@ angle = 0
 # > 40: Careful, what you do here. Only use this if your autonomous steering is very reliable.
 vel_input = 15.0
 
-max_velocity = 45.0
+max_velocity = 40.0
 min_velocity = 25.0
 vel_scale_factor = 30.0		# need to tune this
 
@@ -37,7 +37,7 @@ def control(data):
 	global kd
 	global angle
 
-	print("PID Control Node is Listening to error")
+	# print("PID Control Node is Listening to error")
 
 	## Your PID code goes here
 	#TODO: Use kp, ki & kd to implement a PID controller
@@ -45,18 +45,18 @@ def control(data):
 	# 1. Scale the error
 	# 2. Apply the PID equation on error to compute steering
 	
-	print("old angle is", angle)
+	# print("old angle is", angle)
 	error = data.pid_error
 	diff = error - prev_error
-	steering_correction = kp * error + kd * diff
-	angle += steering_correction
+        steering_correction = kp * error + kd * diff
+        angle = math.degrees(steering_correction)
 	prev_error = error
 	
-	print("error is", error)
-	print("steering correction is", steering_correction)
-	print("new angle is", angle)
+	# print("error is", error)
+	# print("steering correction is", steering_correction)
+	# print("new angle is", angle)
 
-	scaled_velocity = max_velocity - (vel_scale_factor * abs(error))
+	scaled_velocity = max_velocity - (vel_scale_factor * abs(error) * abs(error))
 
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()
@@ -64,7 +64,7 @@ def control(data):
 	# DONE: Make sure the steering value is within bounds [-100,100]
 	if angle > 100:
 		angle = 100
-	elif angle < -100:
+        elif angle < -100:
 		angle = -100
 	
 	command.steering_angle = angle
@@ -75,11 +75,11 @@ def control(data):
 	elif scaled_velocity < min_velocity:
 		scaled_velocity = min_velocity
 
-	print("scaled velocity is", scaled_velocity)
+	# print("scaled velocity is", scaled_velocity)
 	
 	command.speed = scaled_velocity
 
-	# Move the car autonomously
+        # Move the car autonomously
 	command_pub.publish(command)
 
 if __name__ == '__main__':
@@ -89,15 +89,15 @@ if __name__ == '__main__':
 	global kd
 	global ki
 	global vel_input
-	# kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
-	# kd = float( input("Enter Kd Value: "))
-	# ki = float(input("Enter Ki Value: "))
+	kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
+	kd = float( input("Enter Kd Value: "))
+	ki = float(input("Enter Ki Value: "))
 	# max_velocity = float(input("Enter desired max velocity: "))
 	 
-	kp = rospy.get_param('~kp', 10.0)
-	kd = rospy.get_param('~kd', 0.5)
-	ki = rospy.get_param('~ki', 0.0)
-	max_velocity = rospy.get_param('~vel', 45.0)
+	# kp = rospy.get_param('~kp', 5.0)
+	# kd = rospy.get_param('~kd', 3.0)
+	# ki = rospy.get_param('~ki', 0.0)
+	# max_velocity = rospy.get_param('~vel_input', 45.0)
 
 	rospy.loginfo("PID gains loaded: kp=%f, kd=%f, ki=%f", kp, kd, ki)
 	rospy.loginfo("Max Velocity set to: %f", max_velocity)

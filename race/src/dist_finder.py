@@ -24,17 +24,17 @@ def getRange(data,angle):
     # Make sure to take care of NaNs etc.
     # DONE: implement
 	
-	print("angle min", data.angle_min)
-	print("angle max", data.angle_max)
-	print("angle increment", data.angle_increment)
-	print("ranges length", len(data.ranges))
-	print("angle in degrees", angle)
+	# print("angle min", data.angle_min)
+	# print("angle max", data.angle_max)
+	# print("angle increment", data.angle_increment)
+	# print("ranges length", len(data.ranges))
+	# print("angle in degrees", angle)
 	angle += 30
 	angle_radians = math.radians(angle)
 	
 	index = int((angle_radians) / data.angle_increment)
-	print("angle radians", angle_radians)
-	print("index", index)
+	# print("angle radians", angle_radians)
+	# print("index", index)
 
 	if index >= 0 and index < len(data.ranges):
 		value = data.ranges[index]
@@ -54,6 +54,10 @@ def callback(data):
 
 	if not a or not b:
 		rospy.loginfo("Invalid LIDAR readings a: %s, b: %s", a, b)
+                msg = pid_input()
+                msg.pid_error = 0
+                msg.pid_vel = vel
+                pub.publish(msg)
 		return
 
 	swing = math.radians(theta)
@@ -75,7 +79,7 @@ def callback(data):
 
 
 if __name__ == '__main__':
-	print("Hokuyo LIDAR node started")
+	# print("Hokuyo LIDAR node started")
 	rospy.init_node('dist_finder',anonymous = True)
 	# DONE: Make sure you are subscribing to the correct car_x/scan topic on your racecar
 	rospy.Subscriber("/car_1/scan",LaserScan,callback)
