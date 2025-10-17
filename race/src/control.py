@@ -10,6 +10,7 @@ kd = 0.0
 ki = 0.0
 servo_offset = 0.0	# zero correction offset in case servo is misaligned and has a bias in turning.
 prev_error = 0.0
+angle = 0
 
 
 # This code can input desired velocity from the user.
@@ -21,6 +22,10 @@ prev_error = 0.0
 # > 40: Careful, what you do here. Only use this if your autonomous steering is very reliable.
 vel_input = 15.0
 
+max_velocity = 45.0
+min_velocity = 25.0
+vel_scale_factor = 30.0		# need to tune this
+
 # Publisher for moving the car.
 # DONE: Use the coorect topic /car_x/offboard/command. The multiplexer listens to this topic
 command_pub = rospy.Publisher('/car_1/offboard/command', AckermannDrive, queue_size = 1)
@@ -31,7 +36,6 @@ def control(data):
 	global kp
 	global kd
 	global angle
-	angle = 0
 
 	print("PID Control Node is Listening to error")
 
@@ -41,17 +45,18 @@ def control(data):
 	# 1. Scale the error
 	# 2. Apply the PID equation on error to compute steering
 	
-	print(angle)
+	print("old angle is", angle)
 	error = data.pid_error
 	diff = error - prev_error
 	steering_correction = kp * error + kd * diff
-	steering_correction = math.degrees(steering_correction)
 	angle += steering_correction
 	prev_error = error
 	
 	print("error is", error)
 	print("steering correction is", steering_correction)
 	print("new angle is", angle)
+
+	scaled_velocity = max_velocity - (vel_scale_factor * abs(error))
 
 	# An empty AckermannDrive message is created. You will populate the steering_angle and the speed fields.
 	command = AckermannDrive()
@@ -64,13 +69,15 @@ def control(data):
 	
 	command.steering_angle = angle
 
-	# DONE: Make sure the velocity is within bounds [0,100]
-	if vel_input > 100:
-		vel_input = 100
-	elif vel_input < 0:
-		vel_input = 0
+	# DONE: Make sure the velocity is within bounds
+	if scaled_velocity > max_velocity:
+		scaled_velocity = max_velocity
+	elif scaled_velocity < min_velocity:
+		scaled_velocity = min_velocity
+
+	print("scaled velocity is", scaled_velocity)
 	
-	command.speed = vel_input
+	command.speed = scaled_velocity
 
 	# Move the car autonomously
 	command_pub.publish(command)
@@ -85,7 +92,7 @@ if __name__ == '__main__':
 	kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
 	kd = float( input("Enter Kd Value: "))
 	ki = float(input("Enter Ki Value: "))
-	vel_input = float(input("Enter desired velocity: "))
+	max_velocity = float(input("Enter desired max velocity: "))
 	rospy.init_node('pid_controller', anonymous=True)
     # subscribe to the error topic
 	rospy.Subscriber("error", pid_input, control)
