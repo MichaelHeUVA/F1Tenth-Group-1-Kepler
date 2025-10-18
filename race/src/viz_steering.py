@@ -5,56 +5,78 @@ from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 
 
-class SteeringViz:
+class SteeringViz(object):
     def __init__(self):
-        # Keep markers in base_link so the arrow points relative to the car body
-        self.frame_id = rospy.get_param("~frame_id", "base_link")
+        # ---- params ----
+        self.frame_id = rospy.get_param("~frame_id", "car_1/base_link")
         self.cmd_topic = rospy.get_param("~cmd_topic", "/car_1/offboard/command")
-        self.arrow_topic = rospy.get_param("~arrow_topic", "/viz/steering")
-
-        self.arrow_len = rospy.get_param("~arrow_length", 0.8)
-        self.max_vis_angle = rospy.get_param("~max_vis_angle_deg", 40.0)
-        self.assume_degrees = rospy.get_param("~steering_cmd_in_degrees", False)
+        self.arrow_topic = rospy.get_param("~arrow_topic", "/car_1/steering_marker")
+        self.arrow_len = float(rospy.get_param("~arrow_length", 0.35))  # meters
+        self.use_degrees = bool(rospy.get_param("~use_degrees", False))
+        self.clip_deg = float(
+            rospy.get_param("~clip_degrees", 45.0)
+        )  # for display only
 
         self.pub = rospy.Publisher(self.arrow_topic, Marker, queue_size=1)
-        rospy.Subscriber(self.cmd_topic, AckermannDrive, self.cb)
-
-    def cb(self, msg):
-        angle = msg.steering_angle
-        if self.assume_degrees:
-            angle = math.radians(angle)
-
-        angle = max(
-            -math.radians(self.max_vis_angle),
-            min(math.radians(self.max_vis_angle), angle),
+        self.sub = rospy.Subscriber(
+            self.cmd_topic, AckermannDrive, self.callback, queue_size=10
         )
+
+        rospy.loginfo(
+            "viz_steering listening on %s, publishing %s",
+            self.cmd_topic,
+            self.arrow_topic,
+        )
+
+    def callback(self, msg):
+        # Pull steering angle from the drive command
+        ang = msg.steering_angle  # expected in radians by ROS conventions
+        if self.use_degrees:
+            # If your control stack uses degrees, convert here once
+            ang = math.radians(ang)
+
+        # Optional: clip for visualization so the arrow doesn’t fold back on itself
+        ang = max(min(ang, math.radians(self.clip_deg)), -math.radians(self.clip_deg))
+
+        # Arrow from origin along the steering direction in base_link
+        tip_x = self.arrow_len * math.cos(ang)
+        tip_y = self.arrow_len * math.sin(ang)
 
         m = Marker()
         m.header.frame_id = self.frame_id
         m.header.stamp = rospy.Time.now()
-        m.ns = "steering_arrow"
-        m.id = 1
+        m.ns = "steering"
+        m.id = 0
         m.type = Marker.ARROW
         m.action = Marker.ADD
 
-        p0 = Point(0.0, 0.0, 0.1)
-        p1 = Point(
-            self.arrow_len * math.cos(angle), self.arrow_len * math.sin(angle), 0.1
-        )
-        m.points = [p0, p1]
+        # When using ARROW with points, scale.x = shaft diameter,
+        # scale.y = head diameter, scale.z = head length
+        m.scale.x = 0.04
+        m.scale.y = 0.08
+        m.scale.z = 0.10
 
-        m.scale.x = 0.03  # shaft diameter
-        m.scale.y = 0.06  # head diameter
-        m.scale.z = 0.12  # head length
+        # white, fully opaque
         m.color.r = 1.0
         m.color.g = 1.0
         m.color.b = 1.0
         m.color.a = 1.0
-        m.lifetime = rospy.Duration(0)
+
+        p0 = Point()
+        p0.x, p0.y, p0.z = 0.0, 0.0, 0.05
+        p1 = Point()
+        p1.x, p1.y, p1.z = tip_x, tip_y, 0.05
+        m.points = [p0, p1]
+        m.lifetime = rospy.Duration(0.0)
+
         self.pub.publish(m)
 
 
-if __name__ == "__main__":
+def main():
     rospy.init_node("viz_steering")
     SteeringViz()
     rospy.spin()
+
+
+if __name__ == "__main__":
+    main()
