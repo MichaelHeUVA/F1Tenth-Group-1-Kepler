@@ -2,23 +2,9 @@
   roslaunch race wall_following.launch kp:=10.0 kd:=0.5 vel:=45.0
 -->
 <launch>
-
-  <arg name="kp" default="10.0" />
-  <arg name="kd" default="0.5" />
-  <arg name="ki" default="0.0" />
-  <arg name="vel" default="45.0" />
-
-  <include file="$(find move_base)/move_base.launch">
-    <arg name="listen_offboard" value="true" />
-  </include>
-
   <node pkg="race" type="dist_finder.py" name="dist_finder" output="screen" />
 
-  <node pkg="race" type="control.py" name="pid_controller" output="screen">
-    <param name="kp" value="$(arg kp)" />
-    <param name="kd" value="$(arg kd)" />
-    <param name="ki" value="$(arg ki)" />
-    <param name="vel" value="$(arg vel)" />
+  <node pkg="race" type="control.py" name="pid_controller" output="screen" >
   </node>
 
 </launch>

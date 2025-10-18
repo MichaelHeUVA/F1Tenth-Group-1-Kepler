@@ -12,7 +12,6 @@ desired_distance = 0.5	# distance from the wall (in m). (defaults to right wall)
 vel = 15 		# this vel variable is not really used here.
 error = 0.0		# initialize the error
 car_length = 0.50 # Traxxas Rally is 20 inches or 0.5 meters. Useful variable.
-
 # Handle to the publisher that will publish on the error topic, messages of the type 'pid_input'
 pub = rospy.Publisher('error', pid_input, queue_size=10)
 
@@ -34,14 +33,15 @@ def getRange(data,angle):
 	
 	index = int((angle_radians) / data.angle_increment)
 	# print("angle radians", angle_radians)
-	# print("index", index)
+	#  print("index", index)
 
 	if index >= 0 and index < len(data.ranges):
 		value = data.ranges[index]
 		if not math.isinf(value) and not math.isnan(value):
+			past_range = value
 			return value
-		
-	return None
+		else:
+			return 10 
 
 
 
@@ -69,7 +69,7 @@ def callback(data):
 	AB = b * math.cos(alpha)
 	CD = AB + forward_projection * math.sin(alpha)
 	error = desired_distance - CD
-	rospy.loginfo("Error: %f", error)
+	# rospy.loginfo("Error: %f", error)
 
 	msg = pid_input()	# An empty msg is created of the type pid_input
 	# this is the error that you want to send to the PID for steering correction.

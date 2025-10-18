@@ -19,9 +19,9 @@ def main():
     rospy.init_node("footprint_publisher")
 
     # ---- params (feel free to tweak) ----
-    frame_id = rospy.get_param("~frame_id", "car_1/base_link")
+    frame_id = rospy.get_param("~frame_id", "car_1_base_link")
     topic_out = rospy.get_param("~topic_out", "/car_1/footprint")
-    length_m = float(rospy.get_param("~length", 0.52))  # car length (m)
+    length_m = float(rospy.get_param("~length", 0.60))  # car length (m)
     width_m = float(rospy.get_param("~width", 0.30))  # car width  (m)
     hz = float(rospy.get_param("~rate", 5.0))  # publish rate
 

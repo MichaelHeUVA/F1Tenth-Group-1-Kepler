@@ -5,9 +5,9 @@ from race.msg import pid_input
 from ackermann_msgs.msg import AckermannDrive
 
 # PID Control Params
-kp = 0.0
-kd = 0.0
-ki = 0.0
+kp = 4.0
+kd = 3.0
+ki = 10.0
 servo_offset = 0.0	# zero correction offset in case servo is misaligned and has a bias in turning.
 prev_error = 0.0
 angle = 0
@@ -23,7 +23,7 @@ angle = 0
 vel_input = 15.0
 
 max_velocity = 40.0
-min_velocity = 25.0
+min_velocity = 20.0
 vel_scale_factor = 30.0		# need to tune this
 
 # Publisher for moving the car.
@@ -89,14 +89,14 @@ if __name__ == '__main__':
 	global kd
 	global ki
 	global vel_input
-	kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
-	kd = float( input("Enter Kd Value: "))
-	ki = float(input("Enter Ki Value: "))
+	# kp = float(input("Enter Kp Value: "))		# try 5 for kp and 0.09 for kd at first
+	# kd = float( input("Enter Kd Value: "))
+	# ki = float(input("Enter Ki Value: "))
 	# max_velocity = float(input("Enter desired max velocity: "))
 	 
-	# kp = rospy.get_param('~kp', 5.0)
-	# kd = rospy.get_param('~kd', 3.0)
-	# ki = rospy.get_param('~ki', 0.0)
+	kp = rospy.get_param('~kp', 5.0)
+	kd = rospy.get_param('~kd', 3.0)
+	ki = rospy.get_param('~ki', 0.0)
 	# max_velocity = rospy.get_param('~vel_input', 45.0)
 
 	rospy.loginfo("PID gains loaded: kp=%f, kd=%f, ki=%f", kp, kd, ki)

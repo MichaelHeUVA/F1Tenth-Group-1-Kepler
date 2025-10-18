@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import rospy, math
 from ackermann_msgs.msg import AckermannDrive
 from visualization_msgs.msg import Marker
@@ -8,7 +9,7 @@ from geometry_msgs.msg import Point
 class SteeringViz(object):
     def __init__(self):
         # ---- params ----
-        self.frame_id = rospy.get_param("~frame_id", "car_1/base_link")
+        self.frame_id = rospy.get_param("~frame_id", "car_1_base_link")
         self.cmd_topic = rospy.get_param("~cmd_topic", "/car_1/offboard/command")
         self.arrow_topic = rospy.get_param("~arrow_topic", "/car_1/steering_marker")
         self.arrow_len = float(rospy.get_param("~arrow_length", 0.35))  # meters
@@ -58,8 +59,8 @@ class SteeringViz(object):
 
         # white, fully opaque
         m.color.r = 1.0
-        m.color.g = 1.0
-        m.color.b = 1.0
+        m.color.g = 0.0
+        m.color.b = 0.0
         m.color.a = 1.0
 
         p0 = Point()
