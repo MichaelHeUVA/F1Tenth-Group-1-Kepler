@@ -22,9 +22,9 @@ angle = 0
 # > 40: Careful, what you do here. Only use this if your autonomous steering is very reliable.
 vel_input = 15.0
 
-max_velocity = 40.0
-min_velocity = 20.0
-vel_scale_factor = 30.0		# need to tune this
+max_velocity = 50.0             # 40        50
+min_velocity = 25.0             # 20        15
+vel_scale_factor = 30.0		# 30 is best need to tune this
 
 # Publisher for moving the car.
 # DONE: Use the coorect topic /car_x/offboard/command. The multiplexer listens to this topic
@@ -48,6 +48,7 @@ def control(data):
 	# print("old angle is", angle)
 	error = data.pid_error
 	diff = error - prev_error
+        # print("using", kp, "for p and ", kd, "for d")
         steering_correction = kp * error + kd * diff
         angle = math.degrees(steering_correction)
 	prev_error = error
@@ -75,7 +76,7 @@ def control(data):
 	elif scaled_velocity < min_velocity:
 		scaled_velocity = min_velocity
 
-	# print("scaled velocity is", scaled_velocity)
+	print("scaled velocity is", scaled_velocity)
 	
 	command.speed = scaled_velocity
 
@@ -94,8 +95,8 @@ if __name__ == '__main__':
 	# ki = float(input("Enter Ki Value: "))
 	# max_velocity = float(input("Enter desired max velocity: "))
 	 
-	kp = rospy.get_param('~kp', 5.0)
-	kd = rospy.get_param('~kd', 3.0)
+	kp = rospy.get_param('~kp', 1.0)    # 4     1
+	kd = rospy.get_param('~kd', 0.5)    # 3    0.5
 	ki = rospy.get_param('~ki', 0.0)
 	# max_velocity = rospy.get_param('~vel_input', 45.0)
 
