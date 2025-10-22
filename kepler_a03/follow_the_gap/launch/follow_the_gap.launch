@@ -1,0 +1,7 @@
+<launch>
+  <include file="$(find move_base)/launch/move_base.launch">
+	<arg name="listen_offboard" value="true"/>
+  </include>
+  
+  <node pkg="follow_the_gap" type="follow_the_gap.py" name="follow_the_gap" output="screen" />
+</launch>
