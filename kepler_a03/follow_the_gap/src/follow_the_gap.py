@@ -25,37 +25,53 @@ def callback(data):
     # print(len(data.ranges))
 
     # Turn ranges tuple to list, remove nan, and set the range of the scan to [-90, 90]
-    lidar_readings = [r if (math.isnan(r) or math.isinf(r)) else r for r in data.ranges[start_index: end_index + 1]]
 
+    lidar_readings = [data.range_max if (math.isnan(r) or math.isinf(r)) else r for r in data.ranges[start_index: end_index + 1]]
+    i = 0
     # Find the disparities and overwrite the values
-    for i in range(len(lidar_readings) - 1): 
+    while i < len(lidar_readings) - 1:
         if abs(lidar_readings[i] - lidar_readings[i + 1]) >= disparity_threshold:
-            closer_dist = min(lidar_readings[i], lidar_readings[i + 1])
 
-            num_samples_to_overwrite = 30 # TODO: calculate value
+            num_samples_to_overwrite = 75 # TODO: calculate value
 
-            if lidar_readings[i] < lidar_readings[i + 1]:
-                start_idx = i + 1
-                end_idx = min(i + 1 + num_samples_to_overwrite, len(lidar_readings))
-                for j in range(start_idx, end_idx):
-                    if lidar_readings[j] > closer_dist:
-                        lidar_readings[j] = closer_dist
-            else:
-                start_idx = i + 1
-                end_idx = min(i + 1 + num_samples_to_overwrite, len(lidar_readings))
+            start_idx = i
+            end_idx = min(i + num_samples_to_overwrite + 1, len(lidar_readings))
+            for i in range(start_idx, end_idx):  
+                lidar_readings[i] = 0 
+        i += 1
 
-                for j in range(start_idx, end_idx):
-                    if lidar_readings[j] > closer_dist:
-                        lidar_readings[j] = closer_dist
-
-    # Find farthest gap, this doesn't really work because it chooses the first value it can find, this point might not be the best choice if there is a larger gap TODO: change to find the largest gap
-    furthest_dist = max(lidar_readings)
-    furthest_index = len(lidar_readings) - list(reversed(lidar_readings)).index(furthest_dist) - 1
-
+    # Find the largest gap: 
+    #potentially normalize values first? or idea, find average value, and then find any gap bigger than average?
+    #arbtrially choose a distance, and if its greater than that distance, then choose that:
+    #
+    arbitary_distance = 1.5
+    #find the start of the largest gap
+    print(lidar_readings)
+    start = -1
+    largest_gap = 0
+    largest_gap_start= 0
+    end = -1
+    i = 0
+    while i < len(lidar_readings):
+        start = i
+        end = i
+        while i < len(lidar_readings) and lidar_readings[i] > arbitary_distance:
+            end = i
+            i += 1
+        if end - start + 1 > largest_gap:
+            largest_gap = end - start + 1
+            largest_gap_start = start
+        i += 1
+        
+    
+    # furthest_dist = max(lidar_readings)
+    # furthest_index = len(lidar_readings) - list(reversed(lidar_readings)).index(furthest_dist) - 1
+    furthest_index = (largest_gap_start + (largest_gap_start + largest_gap)) // 2
+    print(furthest_index, largest_gap)
 
     # Convert index to angle
     angle = math.degrees((furthest_index - (len(lidar_readings) / 2)) * data.angle_increment)
-
+    
     print(angle)
 
     command = AckermannDrive()
