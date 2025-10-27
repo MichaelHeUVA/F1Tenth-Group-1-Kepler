@@ -25,55 +25,26 @@ def callback(data):
     # print(len(data.ranges))
 
     # Turn ranges tuple to list, remove nan, and set the range of the scan to [-90, 90]
+    lidar_readings = [
+        r if (math.isnan(r) or math.isinf(r)) else r
+        for r in data.ranges[start_index : end_index + 1]
+    ]
 
     lidar_readings = [
         data.range_max if (math.isnan(r) or math.isinf(r)) else r
         for r in data.ranges[start_index : end_index + 1]
     ]
-    car_half_width = 0.2
+    i = 0
+    # Find the disparities and overwrite the values
+    while i < len(lidar_readings) - 1:
+        if abs(lidar_readings[i] - lidar_readings[i + 1]) >= disparity_threshold:
+            num_samples_to_overwrite = 75  # TODO: calculate value
 
-    for i in range(len(lidar_readings) - 1):
-        dist_1 = lidar_readings[i]
-        dist_2 = lidar_readings[i + 1]
-
-        if abs(dist_1 - dist_2) > disparity_threshold:
-            # 1. Identify which distance is closer (the obstacle)
-            if dist_1 < dist_2:
-                closer_dist = dist_1
-                closer_idx = i
-                distant_idx = i + 1
-                # We need to overwrite "into" the gap, so we go backwards from the distant index
-                overwrite_direction = -1
-            else:
-                closer_dist = dist_2
-                closer_idx = i + 1
-                distant_idx = i
-                # We need to overwrite "into" the gap, so we go forwards from the distant index
-                overwrite_direction = 1
-
-            # 2. Calculate num_samples_to_overwrite (see point #4 below)
-            # Avoid division by zero
-            if closer_dist < 0.1:
-                num_samples_to_overwrite = 75  # Fallback
-            else:
-                # This is the trigonometry from the lecture
-                angle_to_blank = math.atan(car_half_width / closer_dist)
-                num_samples_to_overwrite = int(
-                    math.ceil(angle_to_blank / data.angle_increment)
-                )
-
-            # 3. Overwrite the buffer
-            start_overwrite_idx = distant_idx
-            for j in range(num_samples_to_overwrite):
-                overwrite_idx = start_overwrite_idx + (j * overwrite_direction)
-
-                # Stop if we go out of bounds
-                if overwrite_idx < 0 or overwrite_idx >= len(lidar_readings):
-                    break
-
-                # 4. CRITICAL CHECK: "Do not overwrite any points that are already closer!"
-                if lidar_readings[overwrite_idx] > closer_dist:
-                    lidar_readings[overwrite_idx] = closer_dist
+            start_idx = i
+            end_idx = min(i + num_samples_to_overwrite + 1, len(lidar_readings))
+            for i in range(start_idx, end_idx):
+                lidar_readings[i] = 0
+        i += 1
 
     # Find the largest gap:
     # potentially normalize values first? or idea, find average value, and then find any gap bigger than average?
