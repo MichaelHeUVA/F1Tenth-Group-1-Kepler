@@ -6,7 +6,7 @@ import math
 
 disparity_threshold = 0.1
 velocity = 15
-
+width_car = 0.25
 command_pub = rospy.Publisher("/car_1/offboard/command", AckermannDrive, queue_size=10)
 
 
@@ -38,12 +38,20 @@ def callback(data):
     # Find the disparities and overwrite the values
     while i < len(lidar_readings) - 1:
         if abs(lidar_readings[i] - lidar_readings[i + 1]) >= disparity_threshold:
-            num_samples_to_overwrite = 75  # TODO: calculate value
+            # Law of cosines => angle to rewrite for the disparity => num_samples_to_overwrite = angle / 0.25 (0.25 degree per lidar scan)
+            angle_radian = math.acos((2 * lidar_readings[i] ** 2 - (width_car / 2) ** 2  /(2 * lidar_readings[i] ** 2)))
+            angle_degree = math.degrees(angle_radian)
+            num_samples_to_overwrite = math.ceil(angle_degree / 0.25)  # TODO: calculate value
 
             start_idx = i
             end_idx = min(i + num_samples_to_overwrite + 1, len(lidar_readings))
-            for i in range(start_idx, end_idx):
-                lidar_readings[i] = 0
+            j = i
+            while j < end_idx:
+                if lidar_readings[j] > lidar_readings[i]:
+                    lidar_readings[j] = lidar_readings[i]
+                j += 1
+            #start the next disparity finding after the overwrite
+            i = j
         i += 1
 
     # Find the largest gap:
